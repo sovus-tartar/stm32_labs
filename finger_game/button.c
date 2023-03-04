@@ -3,7 +3,7 @@
 #include "bit_arithmetic.h"
 #include "wait.h"
 
-struct button_t * button_init(struct button_t * btn, volatile uint32_t *reg, unsigned bit, volatile uint32_t * typer, volatile uint32_t * moder, volatile uint32_t * pupdr)
+struct button_t * button_init(struct button_t * btn, volatile uint32_t *reg, unsigned bit, volatile uint32_t * moder, volatile uint32_t * pupdr)
 {
     GPIO_MODER_PORT_SET_MODE_INPUT(moder, bit);
     GPIO_PUPDR_PORT_PULL_DOWN_SET(pupdr, bit);

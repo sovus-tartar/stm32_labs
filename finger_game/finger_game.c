@@ -3,7 +3,8 @@
 #include "display.h"
 #include "GPIO.h"
 #include "RCC.h"
-
+#include "led.h"
+#include "wait.h"
 
 void board_clocking_init()
 {
@@ -34,7 +35,7 @@ void board_clocking_init()
     REG_RCC_CFGR_PCLK_PRESCALER_SET_DIV_2(REG_RCC_CFGR);
 }
 
-void board_gpio_init(struct button_t * btn1, struct button_t * btn2)
+void board_gpio_init(struct button_t * btn1, struct button_t * btn2, struct led_t * led1, struct led_t * led2)
 {
     REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
     REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
@@ -52,26 +53,81 @@ void board_gpio_init(struct button_t * btn1, struct button_t * btn2)
     for (unsigned i = 1; i < 12u; ++i)
         GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOA_TYPER, i);
 
-    button_init(btn1, GPIOC_IDR, 0, GPIOC_TYPER, GPIOC_MODER, GPIOC_PUPDR);
-    button_init(btn2, 1, GPIOC_TYPER, GPIOC_MODER, GPIOC_PUPDR);
-
+    button_init(btn1, GPIOC_IDR, 0, GPIOC_MODER, GPIOC_PUPDR);
+    button_init(btn2, GPIOC_IDR, 1, GPIOC_MODER, GPIOC_PUPDR);
+    led_init(led1, GPIOC_BSRR, 8, GPIOC_MODER, GPIOC_TYPER);
+    led_init(led2, GPIOC_BSRR, 9, GPIOC_MODER, GPIOC_TYPER);
 }
 
-void led_on(volatile uint32_t * bsrr, unsigned bit)
-{
-    GPIO_BSRR_BIT_SET(GPIOC_BSRR, bit);
-}
 
-void led_off(volatile uint32_t * bsrr, unsigned bit)
+void blink(struct led_t * led1, struct led_t * led2, unsigned display_num, struct Seg7Display * display) //led 1 high freq, led2 low freq
 {
-    GPIO_BSRR_BIT_RESET(GPIOC_BSRR, bit);
+    for(int i = 0; i < 10; ++i)
+    {
+        led_on(led1);
+        SEG7_set_and_push(display, display_num);
+        led_off(led1);
+        SEG7_set_and_push(display, display_num);
+
+        if(i % 5 == 0)
+        {
+            led_on(led2);
+            SEG7_set_and_push(display, display_num);
+            led_off(led2);
+            SEG7_set_and_push(display, display_num);
+        }
+
+        SEG7_set_and_push(display, display_num);
+    }
 }
 
 int main()
 {
-    struct button_t player1_btn, player2_btn;
-    
-    board_clocking_init(&player1_btn, &player2_btn);
+    struct button_t player_btn[2];
+    struct led_t player_led[2];
+    struct Seg7Display display;
 
-    
+    unsigned display_count = 0;
+    unsigned player[2] = {};
+
+    board_clocking_init();
+    board_gpio_init(player_btn, player_btn + 1, player_led, player_led + 1);
+
+    unsigned btn_old_state[2];
+    btn_old_state[0] = button_get_state(player_btn + 0);
+    btn_old_state[1] = button_get_state(player_btn + 1);
+
+    SEG7_set_and_push(&display, 0);
+
+    while(1)
+    {
+        unsigned btn_new_state[2];
+
+        btn_new_state[0] = button_get_state(player_btn + 0);
+        btn_new_state[1] = button_get_state(player_btn + 1);
+
+        if ((btn_old_state[0] == 1) && (btn_new_state[0] == 1) && (btn_old_state[1] == 0) && (btn_new_state[1] == 1))
+        {
+            player[1] += 1;
+            display_count = 100 * (player[0] % 100) + (player[1] % 100);
+            
+            blink(player_led +  1, player_led + 0, display_count, &display);
+        }
+
+        if ((btn_old_state[1] == 1) && (btn_new_state[1] == 1) && (btn_old_state[0] == 0) && (btn_new_state[0] == 1))
+        {
+            player[0] += 1;
+            display_count = 100 * (player[0] % 100) + (player[1] % 100);
+            
+
+            blink(player_led + 0, player_led + 1, display_count, &display);
+        }
+
+        
+
+        SEG7_set_and_push(&display, display_count);
+
+        btn_old_state[0] = btn_new_state[0];
+        btn_old_state[1] = btn_new_state[1];
+    }
 }

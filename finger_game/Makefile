@@ -37,7 +37,8 @@ SOURCES = \
 	finger_game.c \
 	display.c \
 	button.c \
-	wait.c 
+	wait.c \
+	led.c 
 
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
