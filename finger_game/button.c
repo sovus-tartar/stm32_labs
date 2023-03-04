@@ -5,7 +5,6 @@
 
 struct button_t * button_init(struct button_t * btn, volatile uint32_t *reg, unsigned bit, volatile uint32_t * typer, volatile uint32_t * moder, volatile uint32_t * pupdr)
 {
-    GPIO_TYPER_PORT_SET_PUSH_PULL(typer, bit);
     GPIO_MODER_PORT_SET_MODE_INPUT(moder, bit);
     GPIO_PUPDR_PORT_PULL_DOWN_SET(pupdr, bit);
 

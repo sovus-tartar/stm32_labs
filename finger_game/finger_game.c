@@ -34,7 +34,44 @@ void board_clocking_init()
     REG_RCC_CFGR_PCLK_PRESCALER_SET_DIV_2(REG_RCC_CFGR);
 }
 
+void board_gpio_init(struct button_t * btn1, struct button_t * btn2)
+{
+    REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
+    REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
+
+
+    for (unsigned i = 1; i < 13u; ++i)
+        GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOA_MODER, i);
+
+    for(unsigned i = 8; i <= 0; ++i)
+        GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOC_MODER, i);
+
+    for(unsigned i = 0; i < 2u; ++i)
+        GPIO_MODER_PORT_SET_MODE_INPUT(GPIOC_MODER, i);
+
+    for (unsigned i = 1; i < 12u; ++i)
+        GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOA_TYPER, i);
+
+    button_init(btn1, GPIOC_IDR, 0, GPIOC_TYPER, GPIOC_MODER, GPIOC_PUPDR);
+    button_init(btn2, 1, GPIOC_TYPER, GPIOC_MODER, GPIOC_PUPDR);
+
+}
+
+void led_on(volatile uint32_t * bsrr, unsigned bit)
+{
+    GPIO_BSRR_BIT_SET(GPIOC_BSRR, bit);
+}
+
+void led_off(volatile uint32_t * bsrr, unsigned bit)
+{
+    GPIO_BSRR_BIT_RESET(GPIOC_BSRR, bit);
+}
+
 int main()
 {
+    struct button_t player1_btn, player2_btn;
+    
+    board_clocking_init(&player1_btn, &player2_btn);
+
     
 }

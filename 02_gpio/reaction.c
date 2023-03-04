@@ -63,7 +63,7 @@ void board_gpio_init()
     for (unsigned i = 1; i < 13; ++i)
         GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOA_MODER, i);
 
-    for (unsigned i = 0; i < 12; ++i)
+    for (unsigned i = 1; i < 12; ++i)
         GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOA_TYPER, i);
 
 

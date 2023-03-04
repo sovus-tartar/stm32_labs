@@ -34,7 +34,7 @@ endif
 
 SOURCES = \
 	entry.S \
-	reaction.c \
+	finger_game.c \
 	display.c \
 	button.c \
 	wait.c 
