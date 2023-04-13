@@ -10,4 +10,4 @@
 #define READ_REG(REG) (*(REG))                                    // возвращает регистр REG
 
 #define MODIFY_REG(REG, MODIFYMASK, VALUE) (*(REG) = ((*(REG) & (~(MODIFYMASK))) | (VALUE & MODIFYMASK)))
-#define WAIT_FOR(REG, MASK) ({ while ((READ_REG(REG) & (MASK)) != (MASK));}) 
+#define WAIT_FOR(REG, MASK) ({ while ((READ_REG(REG) & (MASK)) != (MASK));})

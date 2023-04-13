@@ -40,17 +40,10 @@ void board_gpio_init(struct button_t * btn1, struct button_t * btn2, struct led_
     REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
     REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
 
-
+    //Enabling display pins
     for (unsigned i = 1; i < 13u; ++i)
         GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOA_MODER, i);
-
-    for(unsigned i = 8; i <= 0; ++i)
-        GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOC_MODER, i);
-
-    for(unsigned i = 0; i < 2u; ++i)
-        GPIO_MODER_PORT_SET_MODE_INPUT(GPIOC_MODER, i);
-
-    for (unsigned i = 1; i < 12u; ++i)
+    for (unsigned i = 1; i < 13u; ++i)
         GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOA_TYPER, i);
 
     button_init(btn1, GPIOC_IDR, 0, GPIOC_MODER, GPIOC_PUPDR);

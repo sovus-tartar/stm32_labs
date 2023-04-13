@@ -36,3 +36,4 @@ void SEG7_set_and_push(struct Seg7Display * seg7, unsigned num)
     }
 }
 
+
