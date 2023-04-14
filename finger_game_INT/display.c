@@ -31,8 +31,6 @@ void SEG7_set_and_push(struct Seg7Display * seg7, unsigned num)
         SEG7_set_number_quarter(seg7, i);
         SEG7_push_display_state_to_mc(seg7);
         wait_1ms();
-        
-        
     }
 }
 

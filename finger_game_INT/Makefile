@@ -22,7 +22,8 @@ LDFLAGS = \
 	-Wl,--warn-common \
 	-Wl,--fatal-warnings \
 	-Wl,-z,max-page-size=8 \
-	-Wl,-T,entry.lds
+	-Wl,-T,entry.lds \
+	
 
 ifeq ($(DEBUG),1)
 	CFLAGS += -g
@@ -35,15 +36,18 @@ endif
 SOURCES = \
 	entry.S \
 	main.c \
-	led.c
+	wait.c \
+	display.c \
+	led.c \
+	button.c
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)
 
 ENTRY_FLASH = build/entry.o
 
-EXECUTABLE_FLASH = build/systick.elf
-BINARY_FLASH     = build/systick.bin
+EXECUTABLE_FLASH = build/main.elf
+BINARY_FLASH     = build/main.bin
 
 #---------------
 # Build scripts

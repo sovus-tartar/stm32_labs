@@ -23,14 +23,12 @@ unsigned button_get_immediate_state(struct button_t *btn)
     return READ_BIT(btn->reg, btn->bit);
 }
 
+void button_update_state(struct button_t *btn)
+{
+    btn->state = button_get_immediate_state(btn);
+}
+
 int button_get_state(struct button_t *btn)
 {
-    unsigned old_state = btn->state;
-    for (int i = 0; i < 50; ++i)
-    {
-        if (old_state == button_get_immediate_state(btn))
-            return old_state;
-    }
-
-    return (btn->state = !old_state);
+    return (btn->state);
 }

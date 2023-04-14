@@ -4,15 +4,21 @@
 #include "./RCC.h"
 #include "./GPIO.h"
 #include "./systick.h"
-
+#include "./display.h"
+#include "./wait.h"
+#include "./button.h"
+#include "./led.h"
 //-------------------
 // RCC configuration
 //-------------------
 
 #define ONE_MILLISECOND 48000U
 
-struct led_t led8;
-struct led_t led9;
+struct led_t player_led[2];
+struct button_t player_btn[2];
+struct Seg7Display display;
+
+unsigned player_won[2] = {};
 
 void board_clocking_init()
 {
@@ -57,6 +63,14 @@ void board_gpio_init()
 {
     // (1) Configure PC8 and PC9:
     REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
+    REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
+
+    //Enabling display pins
+    for (unsigned i = 1; i < 13u; ++i)
+        GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOA_MODER, i);
+    for (unsigned i = 1; i < 13u; ++i)
+        GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOA_TYPER, i);
+
 }
 
 //-----------------------
@@ -84,30 +98,32 @@ void systick_init(uint32_t period_us)
 
 }
 
+void blink(struct led_t * led1, struct led_t * led2) //led 1 high freq, led2 low freq
+{
+    led_on(led1);
+
+    for(int i = 0; i < 5; ++i)
+    {
+        led_on(led2);
+        wait_nms(5);
+        led_off(led2);
+        wait_nms(5);
+    }
+
+    led_off(led1);
+}
+
 void systick_handler(void)
 {
     static unsigned handler_ticks = 0U;
-    static unsigned tick_cntr = 0u;
+    
+    handler_ticks = (handler_ticks + 1) % 4;
+    SEG7_set_number_quarter(&display, handler_ticks);
+    SEG7_push_display_state_to_mc(&display);
+    button_update_state(player_btn);
+    button_update_state(player_btn + 1);
 
-
-    handler_ticks += 1U;
-
-    if (handler_ticks == 10000U)
-    {
-        handler_ticks = 0U;
-        tick_cntr  = (tick_cntr + 1) % 2;
-
-        switch(tick_cntr)
-        {
-            case 0u:
-                led_on(&led9);
-                break;
-            case 1u:
-                led_off(&led9);
-                break;
-        }
-    }
-}
+}   
 
 //------
 // Main
@@ -116,23 +132,55 @@ void systick_handler(void)
 int main(void)
 {
 
+    unsigned player[2] = {};
+
+
     board_clocking_init();
     board_gpio_init();
 
-    systick_init(100U);
+    button_init(player_btn, GPIOC_IDR, 0, GPIOC_MODER, GPIOC_PUPDR);
+    button_init(player_btn + 1, GPIOC_IDR, 1, GPIOC_MODER, GPIOC_PUPDR);
 
-    led_init(&led8, GPIOC_BSRR, 8, GPIOC_MODER, GPIOC_TYPER);
-    led_init(&led9, GPIOC_BSRR, 9, GPIOC_MODER, GPIOC_TYPER);
+    unsigned btn_old_state[2];
+    btn_old_state[0] = button_get_state(player_btn + 0);
+    btn_old_state[1] = button_get_state(player_btn + 1);
 
-    while (1)
+    led_init(player_led, GPIOC_BSRR, 8, GPIOC_MODER, GPIOC_TYPER);
+    led_init(player_led + 1, GPIOC_BSRR, 9, GPIOC_MODER, GPIOC_TYPER);
+    display.number = 0;
+    systick_init(1000U);
+
+    
+
+while(1)
     {
-        more_precise_delay_forbidden_by_quantum_mechanics_1000ms();
+        unsigned btn_new_state[2];
 
-        led_on(&led8);
+        btn_new_state[0] = button_get_state(player_btn + 0);
+        btn_new_state[1] = button_get_state(player_btn + 1);
 
-        more_precise_delay_forbidden_by_quantum_mechanics_1000ms();
+        if ((btn_old_state[0] == 1) && (btn_new_state[0] == 1) && (btn_old_state[1] == 0) && (btn_new_state[1] == 1))
+        {
+            player[1] += 1;
+            display.number = 100 * (player[0] % 100) + (player[1] % 100);
+            
+            blink(player_led +  1, player_led + 0);
+        }
 
-        led_off(&led8);       
+        if ((btn_old_state[1] == 1) && (btn_new_state[1] == 1) && (btn_old_state[0] == 0) && (btn_new_state[0] == 1))
+        {
+            player[0] += 1;
+            display.number = 100 * (player[0] % 100) + (player[1] % 100);
+            
+
+            blink(player_led + 0, player_led + 1);
+        }
+
+        
+
+
+
+        btn_old_state[0] = btn_new_state[0];
+        btn_old_state[1] = btn_new_state[1];
     }
-
 }
