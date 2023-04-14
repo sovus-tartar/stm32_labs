@@ -34,7 +34,8 @@ endif
 
 SOURCES = \
 	entry.S \
-	systick.c
+	systick.c \
+	led.c
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)
