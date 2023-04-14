@@ -71,6 +71,7 @@ void systick_init(uint32_t period_us)
     // - The SYST_CALIB SKEW bit is 1.
     // (1) Program the reload value:
     SYSTICK_RVR_RELOAD_TIME_MS(SYSTICK_RVR, period_us);
+    
 
     // (2) Clear the current value:
     SYSTICK_CVR_CLEAR_VAL(SYSTICK_CVR);
@@ -80,7 +81,7 @@ void systick_init(uint32_t period_us)
     SYSTICK_CSR_COUNTER_ENABLE(SYSTICK_CSR);
     SYSTICK_CSR_TICKINT_ENABLE(SYSTICK_CSR);
 
-    SYSTICK_CALIB_SKEW_EXACT(SYSTICK_CALIB);
+
 }
 
 void systick_handler(void)
