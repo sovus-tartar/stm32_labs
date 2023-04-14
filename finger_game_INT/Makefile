@@ -10,9 +10,7 @@ CFLAGS = \
 	-Wextra \
 	-Werror \
 	-march=armv6-m \
-	-mcpu=cortex-m0 \
-	-g \
-	
+	-mcpu=cortex-m0
 
 LDFLAGS = \
 	-Wall \
@@ -36,18 +34,16 @@ endif
 
 SOURCES = \
 	entry.S \
-	finger_game.c \
-	display.c \
-	button.c \
-	wait.c \
-	led.c 
-
+	main.c \
+	led.c
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)
 
-EXECUTABLE_FLASH = build/finger_game.elf
-BINARY_FLASH     = build/finger_game.bin
+ENTRY_FLASH = build/entry.o
+
+EXECUTABLE_FLASH = build/systick.elf
+BINARY_FLASH     = build/systick.bin
 
 #---------------
 # Build scripts
