@@ -148,7 +148,7 @@ int main(void)
     led_init(player_led, GPIOC_BSRR, 8, GPIOC_MODER, GPIOC_TYPER);
     led_init(player_led + 1, GPIOC_BSRR, 9, GPIOC_MODER, GPIOC_TYPER);
     display.number = 0;
-    systick_init(1000U);
+    systick_init(15U);
 
     
 
