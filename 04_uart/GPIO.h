@@ -24,14 +24,17 @@
 // GPIO macro
 //--------------
 #define GPIO_MODER_PORT_SET_MODE_OUTPUT(REG, BIT) (SET_BIT((REG), 2u * (BIT)))
-#define GPIO_MODER_PORT_SET_MODE_INPUT(REG, BIT) (*(REG) = *(REG) & (~(0b11u << (BIT))))
+#define GPIO_MODER_PORT_SET_MODE_INPUT(REG, BIT) (MODIFY_REG(REG, (0b11u << (2 * BIT)), (0b11u << (2 * BIT))))
+#define GPIO_MODER_PORT_SET_MODE_ALT(REG, BIT) (MODIFY_REG(REG, (0b11u << (2 * BIT)), (0b10u << (2 * BIT))))
 #define GPIO_TYPER_PORT_SET_PUSH_PULL(REG, BIT) (CLEAR_BIT((REG), (BIT)))
 #define GPIO_TYPER_PORT_SET_OPEN_DRAIN(REG, BIT) (SET_BIT((REG), (BIT)))
 #define GPIO_BSRR_BIT_SET(REG, BIT) (SET_BIT(REG, BIT))
 #define GPIO_BSRR_BIT_RESET(REG, BIT) (SET_BIT(REG, (BIT + 16)))
-//to debug
 #define GPIO_PUPDR_PORT_NO_PUPD_SET(REG, BIT) (*(REG) = *(REG) & (~(0b11u << (2 * BIT))))
 #define GPIO_PUPDR_PORT_PULL_UP_SET(REG, BIT) ({GPIO_PUPDR_PORT_NO_PUPD_SET(REG, BIT); SET_BIT((REG), 2u * (BIT));})
 #define GPIO_PUPDR_PORT_PULL_DOWN_SET(REG, BIT) ({GPIO_PUPDR_PORT_NO_PUPD_SET(REG, BIT); SET_BIT((REG), (2u  * (BIT) + 1u));})
-
-
+#define GPIO_AFRH_SET_ALT(REG, PIN) (MODIFY_REG(REG, (0b1111u << (4u * (PIN - 8u))), (0b0001u << (4u * (PIN - 8u)))))
+#define GPIO_AFLH_SET_ALT(REG, PIN) (MODIFY_REG(REG, (0b1111u << (4u * (PIN))), (0b0001u << (4u * (PIN)))))
+#define GPIO_OSPEEDR_SET_FAST(REG, PIN) (MODIFY_REG(REG, (0b11u << (2u * (PIN))), (0b11u << (2u * (PIN)))))
+#define GPIO_OSPEEDR_SET_MEDIUM(REG, PIN) (MODIFY_REG(REG, (0b11u << (2u * (PIN))), (0b01u << (2u * (PIN)))))
+#define GPIO_OSPEEDR_SET_LOW(REG, PIN) (MODIFY_REG(REG, (0b11u << (2u * (PIN))), (0b00u << (2u * (PIN)))))
