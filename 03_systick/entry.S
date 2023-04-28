@@ -11,19 +11,7 @@ __reset_handler:
 	ldr r1, __data_start_vma_val
 	ldr r2, __data_end_vma_val
 
-	bl __loop_copy_section
-
-	ldr r0, __bss_start_lma_val
-	ldr r1, __bss_start_vma_val
-	ldr r2, __bss_end_vma_val
-
-	bl __loop_copy_section
-
-	b __main_section_start
-
 __loop_copy_section:
-	push {r4, lr}
-
 	cmp r1, r2
 	beq __loop_copy_section_end 
 
@@ -35,9 +23,22 @@ __loop_copy_section:
 	b __loop_copy_section
 __loop_copy_section_end:
 	
-	pop {r4, pc}
+	ldr r0, __bss_start_lma_val
+	ldr r1, __bss_start_vma_val
+	ldr r2, __bss_end_vma_val
+	movs r4, #0
 
-__main_section_start:
+__loop_zero_section:
+
+	cmp r1, r2
+	beq __loop_zero_section_end 
+
+	str r4, [r1, #0]
+
+	adds r0, r0, #4 
+	adds r1, r1, #4
+	b __loop_zero_section
+__loop_zero_section_end:
 
     blx main
 
