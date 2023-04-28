@@ -102,9 +102,6 @@ void IRQ0_handler(void)
         led_off(&led8);
         SET_BIT(EXTI_PR, 1);
     }
-
-    
-    
 }
 
 void IRQ1_handler()
