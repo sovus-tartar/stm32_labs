@@ -52,9 +52,9 @@ void uart_init(size_t baudrate, size_t frequency)
     // (4) Enable UART:
     USART_CR1_UART_ENABLE(USART1_CR1);
 
-    // (5) Wait for TX and to enable:
+    // (5) Wait for TX and RX to enable:
     WAIT_FOR(USART1_ISR, USART_ISR_WAIT_TX);
-    WAIT_FOR(USART1_ISR, USART_ISR_WAIT_TX);
+    WAIT_FOR(USART1_ISR, USART_ISR_WAIT_RX);
 }
 
 char uart_rcv_byte()
@@ -79,6 +79,7 @@ void print_string(const char *buf)
     {
         uart_send_byte(buf[i]);
     }
+    uart_send_byte('\n');
 }
 
 //------
@@ -86,7 +87,7 @@ void print_string(const char *buf)
 //------
 
 #define UART_BAUDRATE 1200
-#define UART_BAUDRATE_FIX (UART_BAUDRATE * 0.03)
+#define UART_BAUDRATE_FIX 0
 
 int main()
 {
@@ -97,9 +98,10 @@ int main()
     board_gpio_init();
 
     uart_init(UART_BAUDRATE + UART_BAUDRATE_FIX, CPU_FREQENCY);
-    char temp[64] = "No, you ";
+    
     while (1)
     {
+        char temp[64] = "No, you ";
         for (int i = 8; i < 62; ++i)
         {
             temp[i] = uart_rcv_byte();
