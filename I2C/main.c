@@ -89,12 +89,13 @@ int main ()
     I2C_Master_init();
     uart_init(7200U, 48000000U); //why i have 1200*6?
     MPU6050_Init ();
+    MPU6050_calibration();
 
 	while (1)
 	{  
-        struct point_t temp = MPU6050_Read_Accel();
-
-        temp=temp;
+        struct point_t temp_a = MPU6050_Read(ACCEL);
+        temp_a = MPU6050_Read(GYRO);
+        temp_a=temp_a;
 		//totally_accurate_quantum_femtosecond_precise_super_delay_3000_100ms();
 	}
     

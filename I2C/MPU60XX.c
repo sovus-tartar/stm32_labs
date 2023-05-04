@@ -2,18 +2,10 @@
 #include "I2C.h"
 #include "MPU60XX.h"
 #include "uart.h"
-#define MPU6050_ADDR (uint8_t)0b1101000U
-#define WHO_AM_I_REG (uint8_t)0x75U
-#define PWR_MGMT_1_REG (uint8_t)0x6BU
-#define SMPLRT_DIV_REG (uint8_t)0x19U
-#define ACCEL_CONFIG_REG (uint8_t)0x1CU
-#define GYRO_CONFIG_REG (uint8_t)0x1BU
-#define ACCEL_XOUT_H_REG (uint8_t)0x3BU
-#define ACCEL_XOUT_L_REG (uint8_t)0x3CU
-#define ACCEL_YOUT_H_REG (uint8_t)0x3DU
-#define ACCEL_YOUT_L_REG (uint8_t)0x3EU
-#define ACCEL_ZOUT_H_REG (uint8_t)0x3FU
-#define ACCEL_ZOUT_L_REG (uint8_t)0x40U
+
+
+int16_t MPU_Accel_Offset[3] = {1, 1, 1}; //X, Y, Z offfset
+int16_t MPU_Gyro_Offset[3] = {1, 1, 1}; //X, Y, Z offfset
 
 void MPU_read(uint8_t Address, uint8_t Reg, uint8_t *buffer, uint8_t size)
 {
@@ -54,7 +46,7 @@ void MPU6050_Init(void)
 
         MPU_write(MPU6050_ADDR, PWR_MGMT_1_REG, Data);
         // Set DATA RATE of 1KHz by writing SMPLRT_DIV register
-        /*
+        
         Data = 0x07;
         MPU_write(MPU6050_ADDR, SMPLRT_DIV_REG, Data);
 
@@ -67,33 +59,76 @@ void MPU6050_Init(void)
         //XG_ST=0,YG_ST=0,ZG_ST=0, FS_SEL=0 -> ? 250 ?/s
         Data = 0x00;
         MPU_write(MPU6050_ADDR, GYRO_CONFIG_REG, Data);
-       */
+       
     }
 }
 
-struct point_t MPU6050_Read_Accel(void)
+void MPU6050_calibration(void) 
 {
-    int16_t Accel_X_RAW = 0;
-    int16_t Accel_Y_RAW = 0;
-    int16_t Accel_Z_RAW = 0;
-    uint8_t Rx_data[6] = {};
-    struct point_t temp = {};
+    int16_t temp_offset_ACCEL[3] = {0};
+    int16_t temp_offset_GYRO[3] = {0};
+    //We want x = 16384, y = 0, z = 0 for accel
+    //and x=0 y=0 z=0 for gyro
+    MPU6050_Read_RAW(ACCEL);
+    MPU6050_Read_RAW(GYRO);
+    for (int i = 0; i < 10; ++i)
+    {
+        struct RAW_point_t state_a = MPU6050_Read_RAW(ACCEL);
+        struct RAW_point_t state_g = MPU6050_Read_RAW(GYRO);
 
-    // Read 6 BYTES of data starting from ACCEL_XOUT_H register
-    MPU_read(MPU6050_ADDR, ACCEL_XOUT_L_REG, Rx_data, 6);
+        temp_offset_ACCEL[0] += (16384 - state_a.x);
+        temp_offset_ACCEL[1] += (0 - state_a.y);
+        temp_offset_ACCEL[2] += (0 - state_a.z);
+        temp_offset_GYRO[0] += (0 - state_g.x);
+        temp_offset_GYRO[1] += (0 - state_g.y);
+        temp_offset_GYRO[2] += (0 - state_g.z);
+    
+    }
+    for(int i = 0; i < 3; ++i)
+    {
+        MPU_Accel_Offset[i] = temp_offset_ACCEL[i] / 10;
+        MPU_Gyro_Offset[i] = temp_offset_GYRO[i] / 10;
+    }
+}
 
-    Accel_X_RAW = (int16_t)(Rx_data[2] << 8 | Rx_data[1]);
-    Accel_Y_RAW = (int16_t)(Rx_data[4] << 8 | Rx_data[3]);
-    Accel_Z_RAW = (int16_t)(Rx_data[6] << 8 | Rx_data[5]);
+struct point_t MPU6050_Read(int D)
+{
+    struct RAW_point_t state = MPU6050_Read_RAW(D);
+    double divider = 32768.0;
+    if(D == GYRO)
+        divider /= 250;
+    else
+        divider /= 2;
 
-    /*** convert the RAW values into acceleration in 'g'
-         we have to divide according to the Full scale value set in FS_SEL
-         I have configured FS_SEL = 0. So I am dividing by 16384.0
-         for more details check ACCEL_CONFIG Register              ****/
-
-    temp.x = Accel_X_RAW;
-    temp.y = Accel_Y_RAW;
-    temp.z = Accel_Z_RAW;
+    struct point_t temp =
+    {
+        state.x/divider,
+        state.y/divider,
+        state.z/divider
+    };
 
     return temp;
 }
+
+struct RAW_point_t MPU6050_Read_RAW(int D)
+{
+    uint8_t Rx_data[6] = {};
+    uint8_t addr;
+
+    if (D == GYRO)
+        addr = GYRO_XOUT_H_REG;
+    else
+        addr = ACCEL_XOUT_H_REG;
+
+    struct RAW_point_t temp = {};
+
+    // Read 6 BYTES of data starting from ACCEL_XOUT_H register
+    MPU_read(MPU6050_ADDR, addr, Rx_data, 6);
+    
+    temp.x = ((int16_t)(Rx_data[1] << 8 | Rx_data[0])) + ((D == ACCEL)?(MPU_Accel_Offset[0]):(MPU_Gyro_Offset[0]));
+    temp.y = (int16_t)(Rx_data[3] << 8 | Rx_data[2]) + ((D == ACCEL)?(MPU_Accel_Offset[1]):(MPU_Gyro_Offset[1]));
+    temp.z = (int16_t)(Rx_data[5] << 8 | Rx_data[4]) + ((D == ACCEL)?(MPU_Accel_Offset[2]):(MPU_Gyro_Offset[2]));
+
+    return temp;
+}
+
