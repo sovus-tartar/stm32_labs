@@ -7,6 +7,7 @@
 #include "GPIO.h"
 #include "MPU60XX.h"
 #include <stddef.h>
+
 //-------------------
 // RCC configuration
 //-------------------
@@ -72,9 +73,9 @@ void board_gpio_init()
     GPIO_MODER_PORT_SET_MODE_ALT(GPIOA_MODER, 10);
 }
 
-void totally_accurate_quantum_femtosecond_precise_super_delay_3000_100ms()
+void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms()
 {
-    for (uint32_t i = 0; i < 100U * ONE_MILLISECOND; ++i)
+    for (uint32_t i = 0; i < 1U * ONE_MILLISECOND; ++i)
     {
         // Insert NOP for power consumption:
         __asm__ volatile("nop");
@@ -86,21 +87,16 @@ int main ()
 	board_clocking_init();
     board_gpio_init();
     I2C_Master_init();
+    uart_init(7200U, 48000000U); //why i have 1200*6?
     MPU6050_Init ();
-    uart_init(301U, 48000000U);
-
-    
 
 	while (1)
-	{
+	{  
         struct point_t temp = MPU6050_Read_Accel();
-        temp = temp;
-        uart_send_byte('\r');
-        uart_print_int(temp.x);
-        uart_print_int(temp.y);
-        uart_print_int(temp.z);
-        uart_send_byte('\n');
+
+        temp=temp;
 		//totally_accurate_quantum_femtosecond_precise_super_delay_3000_100ms();
 	}
+    
     
 }

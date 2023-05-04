@@ -4,9 +4,9 @@
 
 struct point_t
 {
-    unsigned int x;
-    unsigned int y;
-    unsigned int z;
+    float x;
+    float y;
+    float z;
 };
 
 void MPU6050_Init (void);

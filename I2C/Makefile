@@ -5,10 +5,10 @@
 CC = arm-none-eabi-gcc
 
 CFLAGS = \
-	-std=c18 \
 	-Wall \
 	-Wextra \
 	-Werror \
+	-std=c18 \
 	-march=armv6-m \
 	-mcpu=cortex-m0
 
@@ -38,7 +38,7 @@ SOURCES = \
 	led.c \
 	I2C.c \
 	MPU60XX.c \
-	uart.c
+	uart.c \
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)

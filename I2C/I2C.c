@@ -65,13 +65,14 @@ void I2C_READ(int Address, int size, unsigned char *buffer)
 
     while (1)
     {
+
         if (READ_BIT(I2C_ISR, 2) == 0)
             continue;
 
         buffer[i] = READ_REG(I2C_RXDR);
         ++i;
 
-        if (i == size)
+        if ((i >= size) && (READ_BIT(I2C_ISR, 2) == 0))
             break;
     }
 
@@ -86,7 +87,7 @@ void I2C_Master_init()
     SET_BIT(REG_RCC_APB1ENR, 21);
     SET_BIT(I2C_CR1, 12);                       // analog filter off
     MODIFY_REG(I2C_CR1, 0b1111u << 8, 0b0001u << 8); // digital filter on
-    WRITE_REG(I2C_TIMINGR, 0xC0416DFDU);        // Recomended magic value
+    WRITE_REG(I2C_TIMINGR, 0x40330522U);        // Recomended magic value
     //SET_BIT(I2C_CR1, 17); //NOSTRETCH
     SET_BIT(I2C_CR1, 0);
 }
