@@ -35,7 +35,10 @@ endif
 SOURCES = \
 	entry.S \
 	main.c \
-	led.c
+	led.c \
+	I2C.c \
+	MPU60XX.c \
+	uart.c
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)

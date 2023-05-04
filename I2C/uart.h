@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stddef.h>
 #include "bit_arithmetic.h"
 
 //----------
@@ -46,3 +46,10 @@
 #define USART_CR2_1_5_STOP_BIT(REG) (MODIFY_REG(REG,USART_CR2_STOP_BIT_MASK, 0b11 << 12))
 #define USART_CR1_UART_ENABLE(REG) (SET_BIT(REG, 0))
 #define USART_CR1_UART_DISABLE(REG) (CLEAR_BIT(REG, 0))
+
+
+void print_string(const char *buf);
+void uart_send_byte(char sym);
+void uart_print_int(int val);
+char uart_rcv_byte();
+void uart_init(size_t baudrate, size_t frequency);

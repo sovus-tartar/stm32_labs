@@ -35,7 +35,9 @@
 #define GPIOB_IDR (volatile uint32_t*)(uintptr_t)0x48000410U
 #define GPIOB_ODR (volatile uint32_t*)(uintptr_t)0x48000414U
 #define GPIOB_BSRR (volatile uint32_t*)(uintptr_t)0x48000418U
+#define GPIOB_AFRL (volatile uint32_t*)(uintptr_t)0x48000420U
 #define GPIOB_AFRH (volatile uint32_t*)(uintptr_t)0x48000424U
+
 #define GPIOB_BRR (volatile uint32_t*)(uintptr_t)0x48000428U
 
 #define GPIOC_MODER (volatile uint32_t*)(uintptr_t)0x48000800U      // GPIO port mode register
@@ -59,7 +61,7 @@
 #define GPIO_PUPDR_PORT_PULL_UP_SET(REG, BIT) ({GPIO_PUPDR_PORT_NO_PUPD_SET(REG, BIT); SET_BIT((REG), 2u * (BIT));})
 #define GPIO_PUPDR_PORT_PULL_DOWN_SET(REG, BIT) ({GPIO_PUPDR_PORT_NO_PUPD_SET(REG, BIT); SET_BIT((REG), (2u  * (BIT) + 1u));})
 /// pins 8...15
-#define GPIO_AFRH_SET_ALT(REG, PIN, MODE) (MODIFY_REG(REG, (MODE << (4u * (PIN - 8u))), (MODE << (4u * (PIN - 8u)))))
+#define GPIO_AFRH_SET_ALT(REG, PIN, MODE) (MODIFY_REG(REG, (0b1111u << (4u * (PIN - 8u))), (MODE << (4u * (PIN - 8u)))))
 /// pins 0...7
 #define GPIO_AFRL_SET_ALT(REG, PIN, MODE) (MODIFY_REG(REG, (MODE << (4u * (PIN))), (MODE << (4u * (PIN)))))
 #define GPIO_OSPEEDR_SET_FAST(REG, PIN) (MODIFY_REG(REG, (0b11u << (2u * (PIN))), (0b11u << (2u * (PIN)))))

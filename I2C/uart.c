@@ -5,26 +5,6 @@
 #include "RCC.h"
 #include "uart.h"
 
-//--------------------
-// GPIO configuration
-//--------------------
-
-void board_gpio_init()
-{
-    REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
-    REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
-
-    // Set alternate functions:
-    GPIO_AFRH_SET_ALT(GPIOA_AFRH, 9);
-    GPIO_AFRH_SET_ALT(GPIOA_AFRH, 10);
-
-    // Configure pin operating speed:
-    GPIO_OSPEEDR_SET_FAST(GPIOA_OSPEEDR, 9);
-    GPIO_OSPEEDR_SET_FAST(GPIOA_OSPEEDR, 10);
-
-    GPIO_MODER_PORT_SET_MODE_ALT(GPIOA_MODER, 9);
-    GPIO_MODER_PORT_SET_MODE_ALT(GPIOA_MODER, 10);
-}
 
 //--------------------
 // GPIO configuration
@@ -65,6 +45,16 @@ char uart_rcv_byte()
     return READ_REG(USART1_RDR);
 }
 
+void uart_print_int(int val)
+{
+    while(val / 10)
+    {
+        uart_send_byte(val % 10 + '0');
+        val = val / 10;
+    }
+    uart_send_byte('\t');
+}
+
 void uart_send_byte(char sym)
 {
     // Wait for TXE:
@@ -88,30 +78,3 @@ void print_string(const char *buf)
 
 #define UART_BAUDRATE 1200
 #define UART_BAUDRATE_FIX 0
-
-int main()
-{
-    struct led_t led;
-    led_init(&led, GPIOC_BSRR, 8, GPIOC_MODER, GPIOC_TYPER);
-    board_clocking_init();
-
-    board_gpio_init();
-
-    uart_init(UART_BAUDRATE + UART_BAUDRATE_FIX, CPU_FREQENCY);
-    
-    while (1)
-    {
-        char temp[64] = "No, you ";
-        for (int i = 8; i < 62; ++i)
-        {
-            temp[i] = uart_rcv_byte();
-
-            if (temp[i] == '\r')
-                break;
-        }
-        temp[62] = '\r';
-        temp[63] = '\0';
-
-        print_string(temp);
-    }
-}

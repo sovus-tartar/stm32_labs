@@ -75,4 +75,4 @@ __bss_end_vma_val:
 .word __exc_handler
 .word __exc_handler
 .word __exc_handler
-.word IRQ0_handler
+
