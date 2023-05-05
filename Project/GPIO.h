@@ -37,14 +37,14 @@
 #define GPIOB_BSRR (volatile uint32_t*)(uintptr_t)0x48000418U
 #define GPIOB_AFRL (volatile uint32_t*)(uintptr_t)0x48000420U
 #define GPIOB_AFRH (volatile uint32_t*)(uintptr_t)0x48000424U
-
 #define GPIOB_BRR (volatile uint32_t*)(uintptr_t)0x48000428U
 
 #define GPIOC_MODER (volatile uint32_t*)(uintptr_t)0x48000800U      // GPIO port mode register
 #define GPIOC_TYPER (volatile uint32_t*)(uintptr_t)0x48000804U      // GPIO port output type register
 #define GPIOC_ODR (volatile uint32_t*)(uintptr_t) 0x48000814U       // GPIO port output register
 #define GPIOC_BSRR (volatile uint32_t*)(uintptr_t) 0x48000818U      // GPIO port bit set/reset register
-
+#define GPIOC_IDR (volatile uint32_t*)(uintptr_t) 0x48000810U    
+#define GPIOC_PUPDR (volatile uint32_t*)(uintptr_t) 0x4800080CU
 
 //--------------
 // GPIO macro

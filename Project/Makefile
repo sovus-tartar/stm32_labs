@@ -42,6 +42,7 @@ SOURCES = \
 	I2C.c \
 	MPU60XX.c \
 	uart.c \
+	button.c \
 
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)

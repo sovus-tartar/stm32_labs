@@ -1,19 +1,26 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "./RCC.h"
-#include "./GPIO.h"
-#include "./I2C.h"
+#include <stddef.h>
+#include <math.h>
+#include "RCC.h"
+#include "GPIO.h"
+#include "I2C.h"
 #include "uart.h"
 #include "GPIO.h"
 #include "MPU60XX.h"
 #include "systick.h"
-#include <stddef.h>
-#include <math.h>
+#include "button.h"
+#include "bit_arithmetic.h"
+#include "SYSCFG.h"
+#include "NVIC.h"
 
 volatile struct point_t state_accel;
 volatile struct point_t state_gyro;
 
 volatile struct point_t angles = {}; // only x, y
+struct button_t btn[2];
+
+
 #define PI 3.1415
 //-------------------
 // RCC configuration
@@ -89,47 +96,62 @@ void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms()
 
 void systick_handler(void)
 {
-    static unsigned counter = 0U;
-
-
-        
-
-
+    static unsigned counter = 1U;
+    static unsigned old_state[2];
     state_accel = MPU6050_Read(ACCEL);
     state_gyro = MPU6050_Read(GYRO);
 
     angles.y = atan(state_accel.y / state_accel.x) * 180 / (PI);
-    if(fabs(state_gyro.x) >= 2)
-        angles.x += state_gyro.x * 1 / 129;
+    angles.z = atan(state_accel.z / state_accel.x) * 180 / (PI);
+    if (fabs(state_gyro.x) >= 1.5)
+        angles.x += state_gyro.x * 1 / 54.7;
 
-    
+    if (counter == 1)
+    {
+        old_state[0] = btn[0].state;
 
-    uart_print_int(angles.x);
-    uart_print_int(angles.y);
-    uart_send_byte('\n');
-    uart_send_byte('\r');
+    }
+    else if (counter < 4)
+    {
+        if (old_state[0] == button_get_immediate_state(btn))
+            counter = 0;
+    }
+    else
+    {
+        btn[0].state = !old_state[0];
+
+        counter = 0;
+    }
+
+    uart_send_byte((char)angles.y);
+    uart_send_byte((char)angles.z);
+    uart_send_byte(btn[0].state);
+    uart_send_byte(btn[1].state);
 
     counter++;
 }
-
 
 int main()
 {
     board_clocking_init();
     board_gpio_init();
-    I2C_Master_init();
+
+    button_init(btn, GPIOA_IDR, 0, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
+    button_init(btn + 1, GPIOA_IDR, 1, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
     uart_init(7200U, 48000000U); // why i have 1200*6?
+    uart_send_byte(31);
+
+    I2C_Master_init();
     MPU6050_Init();
     MPU6050_calibration();
-    systick_init(10U);
+    systick_init(10000U);
 
     while (1)
     {
-        __asm__ volatile ("nop");
+        __asm__ volatile("nop");
         /*uart_print_int(angles.x);
         uart_print_int(angles.y);
         uart_send_byte('\n');
         uart_send_byte('\r');*/
     }
-
 }

@@ -45,6 +45,18 @@ char uart_rcv_byte()
     return READ_REG(USART1_RDR);
 }
 
+char uart_rcv_byte_IMMEDIATE()
+{
+    if(READ_BIT(USART1_ISR, 5))
+    {
+        CLEAR_BIT(USART1_ISR, 5);
+        return READ_REG(USART1_RDR);
+    }
+
+    return 0;
+    
+}
+
 void uart_print_int(int val)
 {
     char temp[10];

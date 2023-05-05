@@ -70,10 +70,9 @@ __bss_end_vma_val:
 .word __exc_handler         // SVCall
 .fill 2, 4, 0x00            // Reserved
 .word __exc_handler         // PendSV
-.word systick_handler        // SysTick
+.word systick_handler         // SysTick
 .word __exc_handler
 .word __exc_handler
 .word __exc_handler
 .word __exc_handler
 .word __exc_handler
-

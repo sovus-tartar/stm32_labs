@@ -53,3 +53,4 @@ void uart_send_byte(char sym);
 void uart_print_int(int val);
 char uart_rcv_byte();
 void uart_init(size_t baudrate, size_t frequency);
+char uart_rcv_byte_IMMEDIATE();
