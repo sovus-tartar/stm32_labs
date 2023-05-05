@@ -47,19 +47,28 @@ char uart_rcv_byte()
 
 void uart_print_int(int val)
 {
+    char temp[10];
+    int i = 0;
     if (val < 0)
     {
         uart_send_byte('-');
         val = -val;
     }
+
     if(val == 0)
         uart_send_byte('0');
 
-    while(val / 10)
+    while(((val % 10) != 0) || (val != 0))
     {
-        uart_send_byte(val % 10 + '0');
+        temp[i] = val % 10 + '0';
+        ++i;
         val = val / 10;
     }
+    for(i = i - 1; i >= 0; --i)
+    {
+        uart_send_byte(temp[i]);
+    }
+
     uart_send_byte('\t');
 }
 

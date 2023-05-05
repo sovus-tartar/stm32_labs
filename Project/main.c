@@ -10,17 +10,16 @@
 #include <stddef.h>
 #include <math.h>
 
-struct point_t state_accel;
-struct point_t state_gyro;
+volatile struct point_t state_accel;
+volatile struct point_t state_gyro;
 
-struct point_t angles = {}; //only x, y
+volatile struct point_t angles = {}; // only x, y
 #define PI 3.1415
 //-------------------
 // RCC configuration
 //-------------------
 
 #define ONE_MILLISECOND 48000U
-
 
 void board_clocking_init()
 {
@@ -53,9 +52,9 @@ void board_clocking_init()
 
 void board_gpio_init()
 {
-    SET_BIT(REG_RCC_APB1ENR, 21); //enable I2C CLOCK
+    SET_BIT(REG_RCC_APB1ENR, 21); // enable I2C CLOCK
     REG_RCC_AHBENR_PORT_B_ENABLE(REG_RCC_AHBENR);
-    for(unsigned i = 6; i <= 9; ++i)
+    for (unsigned i = 6; i <= 9; ++i)
     {
         GPIO_MODER_PORT_SET_MODE_ALT(GPIOB_MODER, i);
         GPIO_TYPER_PORT_SET_OPEN_DRAIN(GPIOB_TYPER, i);
@@ -63,7 +62,6 @@ void board_gpio_init()
         GPIO_PUPDR_PORT_PULL_UP_SET(GPIOB_PUPDR, i);
         GPIO_AFRL_SET_ALT(GPIOB_AFRL, i, GPIO_AF1);
     }
-    
 
     REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
     REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
@@ -90,28 +88,48 @@ void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms()
 }
 
 void systick_handler(void)
-{   
+{
+    static unsigned counter = 0U;
+
+
+        
+
+
     state_accel = MPU6050_Read(ACCEL);
     state_gyro = MPU6050_Read(GYRO);
 
-    angles.y = atan(state_accel.y/state_accel.x) * 180/(PI);
+    angles.y = atan(state_accel.y / state_accel.x) * 180 / (PI);
+    if(fabs(state_gyro.x) >= 2)
+        angles.x += state_gyro.x * 1 / 129;
+
     
+
+    uart_print_int(angles.x);
+    uart_print_int(angles.y);
+    uart_send_byte('\n');
+    uart_send_byte('\r');
+
+    counter++;
 }
 
-int main ()
+
+int main()
 {
-	board_clocking_init();
+    board_clocking_init();
     board_gpio_init();
     I2C_Master_init();
-    uart_init(7200U, 48000000U); //why i have 1200*6?
-    MPU6050_Init ();
+    uart_init(7200U, 48000000U); // why i have 1200*6?
+    MPU6050_Init();
     MPU6050_calibration();
-    systick_init(1000U);
+    systick_init(10U);
 
-	while (1)
-	{  
-		totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms();
-	}
-    
-    
+    while (1)
+    {
+        __asm__ volatile ("nop");
+        /*uart_print_int(angles.x);
+        uart_print_int(angles.y);
+        uart_send_byte('\n');
+        uart_send_byte('\r');*/
+    }
+
 }
