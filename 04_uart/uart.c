@@ -99,6 +99,8 @@ int main()
 
     uart_init(UART_BAUDRATE + UART_BAUDRATE_FIX, CPU_FREQENCY);
     
+    print_string("Hello, world!\n");
+
     while (1)
     {
         char temp[64] = "No, you ";

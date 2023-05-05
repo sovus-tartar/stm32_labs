@@ -1,4 +1,6 @@
 #include "./bit_arithmetic.h"
+#include "./RCC.h"
+#include <stdint.h>
 
 //-------------------
 // SysTick registers
