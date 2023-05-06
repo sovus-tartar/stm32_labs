@@ -1,40 +1,52 @@
 import serial
 import macmouse 
 
-ser = serial.Serial('/dev/tty.usbserial-0001', 1200, 8 , stopbits=2)
+ser = serial.Serial('/dev/tty.usbserial-0001', 2400, 8 , stopbits=2)
 print(ser.name)
 
-while 1:
-    temp = ser.read()
-    print(temp)
-    if(temp == b'\x1f'):
-        break
 
 lc_prev = 0
 rc_prev = 0
 
 while 1:
+
+    while 1:
+        s = ser.read()
+        #print(s)
+        if(s == b'\x1f'):
+            break
+
     val1 = int.from_bytes(ser.read(), "little", signed="True")
+    if (abs(val1) <= 7):
+        val1 = 0
+    
     val2 = int.from_bytes(ser.read(), "little", signed="True")
+    if (abs(val2) <= 7):
+        val2 = 0
     lc = int.from_bytes(ser.read(), "little", signed="True")
     rc = int.from_bytes(ser.read(), "little", signed="True")
 
-    print(val1, val2, lc, rc, sep=' ')
-    macmouse.move(val2/5, -val1/5, absolute=False, duration=0.1)
+    #print(val1, val2, lc, rc, sep=' ')
+    macmouse.move(val2/5, -val1/5, absolute=False, duration=0)
 
     
     if((lc == 1) and (lc_prev == 0)):
         #print('PUSH')            
-        macmouse.hold()
+        macmouse.hold(button = 'left')
 
     if((lc == 0) and (lc_prev == 1)):
         #print('RELEASE')
-        macmouse.release()
+        macmouse.release(button = 'left')
     #print(lc_prev)
     lc_prev = lc
 
-    if(rc):
-        macmouse.click()
+    if((rc == 1) and (rc_prev == 0)):
+        #print('PUSH')            
+        macmouse.hold(str('right'))
+
+    if((rc == 0) and (rc_prev == 1)):
+        #print('RELEASE')
+        macmouse.release(str('right'))
     
 
 

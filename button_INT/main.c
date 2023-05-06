@@ -6,7 +6,7 @@
 #include "./systick.h"
 #include "SYSCFG.h"
 #include "NVIC.h"
-#include "button.h"
+#include "button_INT.h"
 
 //-------------------
 // RCC configuration
@@ -86,6 +86,7 @@ void EXTI_init()
     EXTI_FTSR_ENABLE(EXTI_RTSR, 1);
 
     SET_BIT(NVIC_ISER, 5);
+    *NVIC_IPR0 = 0b00000000U;
 }
 
 void IRQ0_handler(void)

@@ -20,7 +20,6 @@ volatile struct point_t state_gyro;
 volatile struct point_t angles = {}; // only x, y
 struct button_t btn[2];
 
-
 #define PI 3.1415
 //-------------------
 // RCC configuration
@@ -83,6 +82,9 @@ void board_gpio_init()
 
     GPIO_MODER_PORT_SET_MODE_ALT(GPIOA_MODER, 9);
     GPIO_MODER_PORT_SET_MODE_ALT(GPIOA_MODER, 10);
+
+    GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOC_MODER, 0);
+    GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOC_TYPER, 0);
 }
 
 void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms()
@@ -96,7 +98,7 @@ void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms()
 
 void systick_handler(void)
 {
-    static unsigned counter = 1U;
+    static unsigned counter[2] = {1U, 1U};
     static unsigned old_state[2];
     state_accel = MPU6050_Read(ACCEL);
     state_gyro = MPU6050_Read(GYRO);
@@ -106,40 +108,63 @@ void systick_handler(void)
     if (fabs(state_gyro.x) >= 1.5)
         angles.x += state_gyro.x * 1 / 54.7;
 
-    if (counter == 1)
+    for (int j = 0; j < 2; ++j)
     {
-        old_state[0] = btn[0].state;
+        if (counter[j] == 1)
+        {
+            old_state[j] = btn[j].state;
+        }
+        else if (counter[j] < 4)
+        {
+            if (old_state[j] == button_get_immediate_state(btn + j))
+                counter[j] = 0;
+        }
+        else
+        {
+            btn[j].state = !old_state[j];
 
-    }
-    else if (counter < 4)
-    {
-        if (old_state[0] == button_get_immediate_state(btn))
-            counter = 0;
-    }
-    else
-    {
-        btn[0].state = !old_state[0];
+            counter[j] = 0;
+        }
 
-        counter = 0;
+        counter[j] += 1;
     }
-
+    uart_send_byte((char)0x1fU);
     uart_send_byte((char)angles.y);
     uart_send_byte((char)angles.z);
     uart_send_byte(btn[0].state);
     uart_send_byte(btn[1].state);
 
-    counter++;
+    
+}
+
+void timing_perfect_delay(uint32_t millis)
+{
+    unsigned ticks;
+    ticks = millis * (ONE_MILLISECOND) / 10;
+
+    __asm__(
+        "1: ldr r3, [r7, #12] \n\t" // 2
+        "cmp r3, #0 \n\t"           // 1
+        "beq 2f \n\t"               // 1
+        "sub r3, #1 \n\t"           // 1
+        "str r3, [r7, #12] \n\t"    // 2
+        "b 1b \n\t"                 // 3
+        "2: \n\t");
+
+    ticks += 0;
 }
 
 int main()
 {
     board_clocking_init();
     board_gpio_init();
+    GPIO_BSRR_BIT_SET(GPIOC_BSRR, 0);
+    timing_perfect_delay(100);
 
     button_init(btn, GPIOA_IDR, 0, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
     button_init(btn + 1, GPIOA_IDR, 1, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
-    uart_init(7200U, 48000000U); // why i have 1200*6?
-    uart_send_byte(31);
+
+    uart_init(14400U, 48000000U); // why i have 2400*6?
 
     I2C_Master_init();
     MPU6050_Init();
