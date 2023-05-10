@@ -17,7 +17,7 @@
 
 void I2C_START();
 void I2C_STOP();
-void I2C_WRITE();
+void I2C_WRITE(int size, unsigned char *data);
 void I2C_SEND_ADDRESS(unsigned char address, int mode, int size);
-void I2C_READ(int Address, int size, unsigned char * buffer);
+void I2C_READ(int size, unsigned char * buffer);
 void I2C_Master_init();

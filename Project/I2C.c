@@ -13,10 +13,8 @@ void I2C_STOP()
     SET_BIT(I2C_CR2, 14);
 }
 
-void I2C_WRITE(int Address, int size, unsigned char *data) // nbytes must be below 256
+void I2C_WRITE(int size, unsigned char *data) // nbytes must be below 256
 {
-    Address = Address;
-
     int i = 0;
 
     while (1)
@@ -56,11 +54,9 @@ void I2C_SEND_ADDRESS(unsigned char address, int mode, int size) // mode 1 read,
     *I2C_CR2 |= size << 16;
 }
 
-void I2C_READ(int Address, int size, unsigned char *buffer)
+void I2C_READ(int size, unsigned char *buffer)
 {
-    Address = Address;
     
-
     int i = 0;
 
     while (1)
@@ -88,6 +84,5 @@ void I2C_Master_init()
     SET_BIT(I2C_CR1, 12);                       // analog filter off
     MODIFY_REG(I2C_CR1, 0b1111u << 8, 0b0001u << 8); // digital filter on
     WRITE_REG(I2C_TIMINGR, 0x40330522U);        // Recomended magic value, 200khz
-    //SET_BIT(I2C_CR1, 17); //NOSTRETCH
     SET_BIT(I2C_CR1, 0);
 }

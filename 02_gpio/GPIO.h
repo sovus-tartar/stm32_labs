@@ -16,7 +16,8 @@
 #define GPIOC_TYPER (volatile uint32_t*)(uintptr_t)0x48000804U      // GPIO port output type register
 #define GPIOC_ODR (volatile uint32_t*)(uintptr_t) 0x48000814U       // GPIO port output register
 #define GPIOC_BSRR (volatile uint32_t*)(uintptr_t) 0x48000818U      // GPIO port bit set/reset register
-
+#define GPIOC_IDR   (volatile uint32_t*)(uintptr_t) 0x48000810U  
+#define GPIOC_PUPDR (volatile uint32_t*)(uintptr_t)0x4800080CU
 
 //--------------
 // GPIO macro

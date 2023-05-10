@@ -58,13 +58,13 @@ void wait_1_ms()
 void board_gpio_init()
 {
     // (1) Configure PA1-PA12 as output:
-    REG_RCC_AHBENR_PORT_A_ENABLE(REG_RCC_AHBENR);
+    REG_RCC_AHBENR_PORT_C_ENABLE(REG_RCC_AHBENR);
 
     for (unsigned i = 1; i < 13; ++i)
-        GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOA_MODER, i);
+        GPIO_MODER_PORT_SET_MODE_OUTPUT(GPIOC_MODER, i);
 
     for (unsigned i = 1; i < 13; ++i)
-        GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOA_TYPER, i);
+        GPIO_TYPER_PORT_SET_PUSH_PULL(GPIOC_TYPER, i);
 }
 
 //------
@@ -84,7 +84,7 @@ int main()
         };
 
     struct button_t btn;
-    button_init(&btn, GPIOA_IDR, 0, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
+    button_init(&btn, GPIOC_IDR, 0, GPIOC_TYPER, GPIOC_MODER, GPIOC_PUPDR);
     unsigned i = 0;
 
     for (i = 0; i < 9999u; ++i)

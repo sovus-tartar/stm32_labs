@@ -12,6 +12,8 @@
 
 void uart_init(size_t baudrate, size_t frequency)
 {
+    baudrate = baudrate * 6; //quick fix because of I2C?
+
     // (1) Configure USART1 clocking:
     REG_RCC_APB2ENR_USART1_ENABLE(REG_RCC_APB2ENR);
     REG_RCC_CFGR3_HSI14_CLK_ENABLE(REG_RCC_CFGR3);

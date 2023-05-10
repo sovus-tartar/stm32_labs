@@ -12,11 +12,11 @@ void MPU_read(uint8_t Address, uint8_t Reg, uint8_t *buffer, uint8_t size)
     
     I2C_SEND_ADDRESS(Address, 0, 1);
     I2C_START();
-    I2C_WRITE(Address, 1, &Reg);
+    I2C_WRITE(1, &Reg);
     I2C_STOP();
     I2C_SEND_ADDRESS(Address, 1, size);
     I2C_START();
-    I2C_READ(Address + 0b1u, size, buffer);
+    I2C_READ(size, buffer);
     I2C_STOP();
 }
 
@@ -25,7 +25,7 @@ void MPU_write(uint8_t Address, uint8_t Reg, uint8_t Data)
     unsigned char temp[2] = {Reg, Data};
     I2C_SEND_ADDRESS(Address, 0, 2);
     I2C_START();
-    I2C_WRITE(Address, 2, temp);
+    I2C_WRITE(2, temp);
     I2C_STOP();
 
 }

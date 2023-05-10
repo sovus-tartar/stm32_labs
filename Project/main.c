@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <math.h>
+
 #include "RCC.h"
 #include "GPIO.h"
 #include "I2C.h"
@@ -11,13 +12,11 @@
 #include "systick.h"
 #include "button.h"
 #include "bit_arithmetic.h"
-#include "SYSCFG.h"
-#include "NVIC.h"
 
 volatile struct point_t state_accel;
 volatile struct point_t state_gyro;
 
-volatile struct point_t angles = {}; // only x, y
+volatile struct point_t angles = {};
 struct button_t btn[2];
 
 #define PI 3.1415
@@ -96,6 +95,15 @@ void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1ms()
     }
 }
 
+void send_data(void)
+{
+    uart_send_byte((char)0x1fU);
+    uart_send_byte((char)angles.y);
+    uart_send_byte((char)angles.z);
+    uart_send_byte(btn[0].state);
+    uart_send_byte(btn[1].state);
+}
+
 void systick_handler(void)
 {
     static unsigned counter[2] = {1U, 1U};
@@ -128,13 +136,9 @@ void systick_handler(void)
 
         counter[j] += 1;
     }
-    uart_send_byte((char)0x1fU);
-    uart_send_byte((char)angles.y);
-    uart_send_byte((char)angles.z);
-    uart_send_byte(btn[0].state);
-    uart_send_byte(btn[1].state);
 
-    
+    send_data();
+
 }
 
 void timing_perfect_delay(uint32_t millis)
@@ -159,12 +163,13 @@ int main()
     board_clocking_init();
     board_gpio_init();
     GPIO_BSRR_BIT_SET(GPIOC_BSRR, 0);
+
     timing_perfect_delay(100);
 
     button_init(btn, GPIOA_IDR, 0, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
     button_init(btn + 1, GPIOA_IDR, 1, GPIOA_TYPER, GPIOA_MODER, GPIOA_PUPDR);
 
-    uart_init(14400U, 48000000U); // why i have 2400*6?
+    uart_init(2400U, 48000000U);
 
     I2C_Master_init();
     MPU6050_Init();

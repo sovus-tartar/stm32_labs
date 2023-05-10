@@ -26,17 +26,21 @@ while 1:
     lc = int.from_bytes(ser.read(), "little", signed="True")
     rc = int.from_bytes(ser.read(), "little", signed="True")
 
-    #print(val1, val2, lc, rc, sep=' ')
-    macmouse.move(val2/5, -val1/5, absolute=False, duration=0)
+    print(val1, val2, lc, rc, sep=' ')
+    #macmouse.move(val2/5, -val1/5, absolute=False, duration=0)
 
     
     if((lc == 1) and (lc_prev == 0)):
         #print('PUSH')            
         macmouse.hold(button = 'left')
+    else:
+        macmouse.move(val2/5, -val1/5, absolute=False, duration=0)
 
     if((lc == 0) and (lc_prev == 1)):
         #print('RELEASE')
         macmouse.release(button = 'left')
+    else:
+        macmouse.move(val2/5, -val1/5, absolute=False, duration=0)
     #print(lc_prev)
     lc_prev = lc
 
