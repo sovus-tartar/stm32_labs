@@ -46,10 +46,23 @@ void board_clocking_init()
     REG_RCC_CFGR_PCLK_PRESCALER_SET_DIV_1(REG_RCC_CFGR);
 }
 
-#define ONE_SEC_DELAY_TIME 3692308U // 48000000 / 13
-void more_precise_delay_forbidden_by_quantum_mechanics_1000ms()
+void timing_perfect_delay(uint32_t millis)
 {
-    for (uint32_t i = 0; i < ONE_SEC_DELAY_TIME; ++i);
+    unsigned ticks;
+    ticks = millis * (ONE_MILLISECOND) / 10;
+
+    __asm__(
+        "1: ldr r3, [r7, #12] \n\t"//2
+        "cmp r3, #0 \n\t"//1
+        "beq 2f \n\t" //1
+        "sub r3, #1 \n\t" //1
+        "str r3, [r7, #12] \n\t" //2
+        "b 1b \n\t" //3
+        "2: \n\t"
+    );
+
+    ticks += 0;
+
 }
 
 //--------------------
@@ -122,8 +135,9 @@ int main(void)
     while(1)
     {
         led_on(&led9);
-        more_precise_delay_forbidden_by_quantum_mechanics_1000ms();
+        timing_perfect_delay(1000);
         led_off(&led9);
+        timing_perfect_delay(1000);
     }
 
 }
